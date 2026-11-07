@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#202329" />
+  <title>Texture Studio — Image & GTA Editor</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+<a class="skip-link" href="#workspace">ไปยังพื้นที่แก้ไข</a>
+<div id="app" data-view="2d">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">Ts</span><div><h1>Texture Studio</h1><span>IMAGE & GTA WORKSPACE</span></div></div>
+    <div class="header-actions">
+      <button id="toggleAssets" class="icon-button mobile-only" data-icon="folder" aria-label="เปิดหรือปิดแผงไฟล์" aria-expanded="false"></button>
+      <button id="newDocument" data-icon="plus">สร้างใหม่</button>
+      <button id="openImage" data-icon="folder">เปิดรูป</button>
+      <span class="header-divider"></span>
+      <button id="undo" class="icon-button" data-icon="undo" aria-label="ย้อนกลับ (Ctrl+Z)" title="ย้อนกลับ (Ctrl+Z)" disabled></button>
+      <button id="redo" class="icon-button" data-icon="redo" aria-label="ทำซ้ำ (Ctrl+Shift+Z)" title="ทำซ้ำ (Ctrl+Shift+Z)" disabled></button>
+    </div>
+    <div class="header-end">
+      <button id="help" class="icon-button" data-icon="help" aria-label="วิธีใช้และคีย์ลัด"></button>
+      <button id="toggleProperties" class="icon-button mobile-only" data-icon="sliders" aria-label="เปิดหรือปิดแผงปรับแต่ง" aria-expanded="false"></button>
+      <details class="export-menu" id="exportMenu">
+        <summary class="primary" data-icon="download">ส่งออก <span class="chevron">⌄</span></summary>
+        <div class="menu-popover">
+          <button id="exportPng" data-icon="image" disabled>รูป PNG <small>พื้นหลังโปร่งใส</small></button>
+          <button id="exportJpg" data-icon="image" disabled>รูป JPG <small>พื้นหลังสีขาว</small></button>
+          <button id="exportDds" data-icon="box" disabled>Texture DDS</button>
+          <button id="exportYtd" data-icon="box" disabled>ไฟล์เกมต้นฉบับ <small>YTD / YDD / YDR / YFT</small></button>
+          <p>ไฟล์ภาพรวมเลเยอร์ทั้งหมดที่แสดงอยู่<br>เลเยอร์ยังคงอยู่ในพื้นที่ทำงาน</p>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <div class="options-bar">
+    <div class="current-tool"><span id="toolIcon" data-icon="brush"></span><strong id="toolName">แปรง</strong><kbd id="toolKey">B</kbd></div>
+    <label class="color-control" title="สีที่ใช้วาด"><input type="color" id="color" value="#6d9dff" aria-label="สีที่ใช้วาด" /><span id="colorValue">#6D9DFF</span></label>
+    <label class="inline-control brush-option">ขนาด <input type="range" id="size" min="1" max="300" value="24" /><output id="sizeValue">24 px</output></label>
+    <label class="inline-control brush-option">ความทึบ <input type="range" id="opacity" min="0.05" max="1" step="0.05" value="1" /><output id="opacityValue">100%</output></label>
+    <label class="inline-control fill-option" hidden>ความใกล้เคียงสี <input type="range" id="tolerance" min="0" max="255" value="40" /><output id="toleranceValue">40</output></label>
+    <span class="option-hint" id="toolHint">ลากเพื่อวาดบนเลเยอร์ที่เลือก</span>
+    <select id="tool" class="sr-only" tabindex="-1" aria-label="เครื่องมือ">
+      <option value="move">ย้ายเลเยอร์</option><option value="select">เลือกพื้นที่</option><option value="crop">ตัดรูป</option>
+      <option value="brush" selected>แปรง</option><option value="eraser">ยางลบ</option><option value="fill">เทสี</option>
+      <option value="picker">ดูดสี</option><option value="text">ข้อความ</option><option value="rect">สี่เหลี่ยม</option>
+      <option value="ellipse">วงกลม</option><option value="stamp">แปะรูป</option><option value="hand">เลื่อนภาพ</option>
+    </select>
+  </div>
+
+  <aside id="left" class="assets-panel" aria-label="ไฟล์และโมเดล">
+    <div class="panel-title"><h2>ไฟล์ของคุณ</h2><span class="badge" id="assetCount">0</span></div>
+    <label class="upload-card" for="texInput"><span data-icon="image"></span><strong>นำเข้ารูป / Texture</strong><span>PNG, JPG, WebP, DDS, YTD</span></label>
+    <input type="file" id="texInput" class="sr-only" accept=".ytd,.dds,.png,.jpg,.jpeg,.webp,.bmp" multiple />
+    <div class="section-heading"><h3>TEXTURES</h3><span id="textureCount">0</span></div>
+    <ul id="texList" class="asset-list"><li class="list-empty">รูปที่เปิดจะแสดงที่นี่</li></ul>
+    <details class="model-section" open>
+      <summary>โมเดล 3D <span class="badge" id="meshCount">0</span></summary>
+      <label class="secondary-upload" for="modelInput" data-icon="box">โหลดโมเดล</label>
+      <input type="file" id="modelInput" class="sr-only" accept=".ydd,.ydr,.yft,.xml,.glb,.gltf,.obj,.fbx" />
+      <p class="muted">GTA / CodeWalker XML / GLB / OBJ / FBX</p>
+      <ul id="meshList" class="asset-list"><li class="list-empty">ยังไม่มีโมเดล</li></ul>
+      <div class="model-options">
+        <label><input type="checkbox" id="flipV" /> กลับ UV แนวตั้ง</label>
+        <label><input type="checkbox" id="wireframe" /> แสดงเส้นโครงโมเดล</label>
+        <label><input type="checkbox" id="paint3d" /> ระบายสีบนโมเดล 3D</label>
+        <button id="frameModel" data-icon="fit" disabled>จัดโมเดลกลางจอ</button>
+      </div>
+    </details>
+    <div class="local-note"><span data-icon="shield"></span><p>แก้ไขบนเครื่องของคุณ<br><span>ไฟล์ไม่ถูกอัปโหลดขึ้นเซิร์ฟเวอร์</span></p></div>
+  </aside>
+
+  <nav class="tool-rail" aria-label="เครื่องมือแก้ไขภาพ">
+    <button data-tool="move" data-icon="move" title="ย้ายเลเยอร์ (V)" aria-label="ย้ายเลเยอร์ (V)" aria-pressed="false"><span>ย้าย</span></button>
+    <button data-tool="select" data-icon="select" title="เลือกพื้นที่ (M)" aria-label="เลือกพื้นที่ (M)" aria-pressed="false"><span>เลือก</span></button>
+    <button data-tool="crop" data-icon="crop" title="ตัดรูป (C)" aria-label="ตัดรูป (C)" aria-pressed="false"><span>ตัดรูป</span></button>
+    <div class="rail-divider"></div>
+    <button data-tool="brush" data-icon="brush" title="แปรง (B)" aria-label="แปรง (B)" aria-pressed="true" class="active"><span>แปรง</span></button>
+    <button data-tool="eraser" data-icon="eraser" title="ยางลบ (E)" aria-label="ยางลบ (E)" aria-pressed="false"><span>ยางลบ</span></button>
+    <button data-tool="fill" data-icon="fill" title="เทสี (G)" aria-label="เทสี (G)" aria-pressed="false"><span>เทสี</span></button>
+    <button data-tool="picker" data-icon="picker" title="ดูดสี (I)" aria-label="ดูดสี (I)" aria-pressed="false"><span>ดูดสี</span></button>
+    <div class="rail-divider"></div>
+    <button data-tool="text" data-icon="text" title="ข้อความ (T)" aria-label="ข้อความ (T)" aria-pressed="false"><span>ข้อความ</span></button>
+    <button data-tool="rect" data-icon="rect" title="สี่เหลี่ยม (U)" aria-label="สี่เหลี่ยม (U)" aria-pressed="false"><span>กรอบ</span></button>
+    <button data-tool="ellipse" data-icon="ellipse" title="วงกลม (O)" aria-label="วงกลม (O)" aria-pressed="false"><span>วงกลม</span></button>
+    <button data-tool="stamp" data-icon="image" title="นำเข้ารูปเป็นเลเยอร์ (P)" aria-label="นำเข้ารูปเป็นเลเยอร์ (P)" aria-pressed="false"><span>แปะรูป</span></button>
+    <button data-tool="hand" data-icon="hand" title="เลื่อนภาพ (H หรือ Space)" aria-label="เลื่อนภาพ (H หรือ Space)" aria-pressed="false"><span>เลื่อน</span></button>
+  </nav>
+
+  <main id="workspace" tabindex="-1">
+    <div class="document-bar"><div class="document-label"><span data-icon="image"></span><span id="documentName">ยังไม่มีเอกสาร</span><span id="documentDirty" class="dirty-dot" hidden title="มีการแก้ไข"></span></div><div class="view-switch" aria-label="มุมมอง"><button data-view="2d" class="active" aria-pressed="true">แก้ไข 2D</button><button data-view="split" aria-pressed="false">2D + 3D</button><button data-view="3d" aria-pressed="false">โมเดล 3D</button></div></div>
+    <div class="work-surfaces">
+      <section class="editor-surface" aria-label="พื้นที่แก้ไขรูป">
+        <div id="canvasWrap">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-art"><span class="art-back"></span><span class="art-front" data-icon="image"></span><span class="art-corner" data-icon="brush"></span></div>
+            <span class="eyebrow">YOUR NEXT CREATION STARTS HERE</span>
+            <h2>พื้นที่สำหรับทุกไอเดีย</h2>
+            <p>แต่งรูป ตัดภาพ หรือออกแบบ Texture<br>ด้วยเครื่องมือที่เข้าใจง่าย ในที่เดียว</p>
+            <button id="emptyOpen" class="primary" data-icon="folder">เปิดรูปเพื่อเริ่มต้น</button>
+            <button id="demoDocument" class="text-button">ลองเครื่องมือด้วยภาพตัวอย่าง →</button>
+            <span class="drop-hint">หรือลากไฟล์รูปมาวางที่นี่</span>
+          </div>
+        </div>
+        <div id="selectionActions" class="selection-actions" hidden><span id="selectionSize"></span><button id="cropSelection" class="primary">ตัดรูป</button><button id="copySelection">คัดลอกเป็นเลเยอร์</button><button id="keepSelection">ลบนอกพื้นที่</button><button id="clearSelection" aria-label="ยกเลิกพื้นที่เลือก">ยกเลิก</button></div>
+        <div class="canvas-bottom"><span id="documentSize">—</span><div class="zoom-controls"><button id="zoomOut" class="icon-button" data-icon="minus" aria-label="ซูมออก" disabled></button><button id="zoomActual" disabled>100%</button><button id="zoomIn" class="icon-button" data-icon="plus" aria-label="ซูมเข้า" disabled></button><button id="zoomFit" data-icon="fit" disabled>พอดีจอ</button></div></div>
+      </section>
+      <section id="viewport" aria-label="ดูโมเดล 3D"><div id="modelEmpty" class="model-empty"><span data-icon="box"></span><h2>ดูงานบนโมเดลจริง</h2><p>โหลดโมเดลจากแผงไฟล์ด้านซ้าย<br>หมุนด้วยเมาส์ · เลื่อนเพื่อซูม</p><button id="openModel" data-icon="folder">โหลดโมเดล 3D</button></div><span class="viewport-label">LIVE 3D PREVIEW</span></section>
+    </div>
+  </main>
+
+  <aside id="right" class="properties-panel" aria-label="ปรับแต่งและเลเยอร์">
+    <div class="panel-title"><h2>ปรับแต่ง</h2><span data-icon="sliders"></span></div>
+    <div id="textOptions" class="property-section" hidden>
+      <h3>ข้อความ</h3><label for="textContent">ข้อความที่ต้องการ</label><textarea id="textContent" rows="2" placeholder="พิมพ์ข้อความ แล้วคลิกบนรูป"></textarea>
+      <div class="field-pair"><label>ขนาดตัวอักษร<input type="number" id="fontSize" min="8" max="512" value="48" /></label><label>น้ำหนัก<select id="fontWeight"><option value="400">ปกติ</option><option value="700" selected>ตัวหนา</option></select></label></div>
+      <label>ฟอนต์<select id="fontFamily"><option value="sans-serif">Sans serif / ภาษาไทย</option><option value="serif">Serif</option><option value="monospace">Monospace</option></select></label>
+      <p class="muted">ข้อความจะเป็นเลเยอร์ภาพ แก้ขนาดและตำแหน่งได้</p>
+    </div>
+    <div id="shapeOptions" class="property-section" hidden><h3>รูปทรง</h3><label><input type="checkbox" id="shapeFill" checked /> เติมสีด้านใน</label><p class="muted">ลากบนรูปเพื่อสร้างรูปทรงเป็นเลเยอร์ใหม่</p></div>
+    <div id="stampOptions" class="property-section" hidden><h3>รูป / โลโก้</h3><button id="importLayer" data-icon="image">เพิ่มรูปเป็นเลเยอร์</button><p class="muted">ลากเพื่อย้าย แล้วปรับขนาดในแผงเลเยอร์</p></div>
+    <input type="file" id="stampInput" class="sr-only" accept=".png,.jpg,.jpeg,.webp,.bmp" multiple />
+
+    <section class="property-section layers-section">
+      <div class="section-heading"><h3>เลเยอร์</h3><span id="layerCount">0</span></div>
+      <div class="layer-toolbar"><button id="addLayer" data-icon="plus" title="เพิ่มเลเยอร์ว่าง" disabled>เพิ่ม</button><button id="addImageLayer" class="icon-button" data-icon="image" title="เพิ่มรูป / โลโก้" aria-label="เพิ่มรูป / โลโก้" disabled></button><button id="duplicateLayer" class="icon-button" data-icon="copy" title="ทำสำเนาเลเยอร์ (Ctrl+J)" aria-label="ทำสำเนาเลเยอร์" disabled></button><button id="deleteLayer" class="icon-button" data-icon="trash" title="ลบเลเยอร์" aria-label="ลบเลเยอร์" disabled></button></div>
+      <ul id="layerList" class="layer-list"><li class="list-empty">เปิดรูปเพื่อเริ่มเพิ่มเลเยอร์</li></ul>
+      <div id="layerProperties" hidden>
+        <label>ชื่อเลเยอร์<input id="layerName" type="text" maxlength="80" /></label>
+        <label class="range-label">ความทึบเลเยอร์ <output id="layerOpacityValue">100%</output><input type="range" id="layerOpacity" min="0" max="1" step="0.01" value="1" /></label>
+        <label>การผสมสี<select id="layerBlend"><option value="source-over">Normal · ปกติ</option><option value="multiply">Multiply · คูณสี</option><option value="screen">Screen · สีสว่าง</option><option value="overlay">Overlay · ซ้อนทับ</option><option value="soft-light">Soft light · แสงนุ่ม</option></select></label>
+        <div class="field-pair"><label>X<input id="layerX" type="number" step="1" /></label><label>Y<input id="layerY" type="number" step="1" /></label></div>
+        <div class="field-pair"><label>กว้าง (px)<input id="layerWidth" type="number" min="1" max="8192" /></label><label>สูง (px)<input id="layerHeight" type="number" min="1" max="8192" /></label></div>
+        <label><input id="layerRatio" type="checkbox" checked /> รักษาสัดส่วน</label>
+        <div class="button-pair"><button id="layerUp" data-icon="up">ขึ้น</button><button id="layerDown" data-icon="down">ลง</button></div>
+      </div>
+    </section>
+
+    <details class="property-section" open><summary>ปรับสีและแสง <span class="muted">เลเยอร์ที่เลือก</span></summary>
+      <label class="range-label">เฉดสี <output id="hueValue">0°</output><input type="range" id="hue" min="-180" max="180" value="0" /></label>
+      <label class="range-label">ความสด <output id="satValue">0</output><input type="range" id="sat" min="-100" max="100" value="0" /></label>
+      <label class="range-label">ความสว่าง <output id="briValue">0</output><input type="range" id="bri" min="-100" max="100" value="0" /></label>
+      <label class="range-label">คอนทราสต์ <output id="contrastValue">0</output><input type="range" id="contrast" min="-100" max="100" value="0" /></label>
+      <div class="button-pair"><button id="applyAdjust" disabled>ใช้การปรับสี</button><button id="cancelAdjust" disabled>ยกเลิก</button></div>
+      <div class="filter-grid"><button data-filter="grayscale(1)" disabled>ขาวดำ</button><button data-filter="sepia(0.8)" disabled>วินเทจ</button><button data-filter="invert(1)" disabled>กลับสี</button><button data-filter="blur(2px)" disabled>เบลอ</button></div>
+    </details>
+    <details class="property-section"><summary>ขนาดและการจัดวาง</summary><div class="button-pair"><button id="rotateLeft" data-icon="rotate" disabled>หมุนซ้าย</button><button id="rotateRight" data-icon="rotate" disabled>หมุนขวา</button><button id="flipH" disabled>กลับซ้าย–ขวา</button><button id="flipImageV" disabled>กลับบน–ล่าง</button></div><button id="resizeImage" class="full-width" data-icon="resize" disabled>ปรับขนาดรูป</button><p id="gameSizeHint" class="muted" hidden>Texture เกมจะคงขนาดต้นฉบับ เพื่อส่งออกกลับเข้าเกมได้</p><button id="reset" class="danger-text full-width" disabled>คืนรูปต้นฉบับ</button></details>
+  </aside>
+
+  <footer class="status-bar"><div><span id="statusDot" class="status-dot"></span><span id="status" role="status" aria-live="polite">พร้อมสร้างสรรค์ — เปิดรูปหรือลากไฟล์มาเริ่มได้เลย</span></div><span class="status-shortcut">Space เลื่อนภาพ <span>·</span> Ctrl + Scroll ซูม <span>·</span> Ctrl + Z ย้อนกลับ</span></footer>
+</div>
+<div id="dropOverlay" hidden><span data-icon="image"></span><h2>วางไฟล์เพื่อเริ่มแก้ไข</h2><p>วางบนรูป = เพิ่มเลเยอร์ · วางที่แผงไฟล์ = เปิดรูปใหม่</p></div>
+<dialog id="documentDialog"><form id="documentForm"><div class="dialog-heading"><h2 id="dialogTitle">สร้างรูปใหม่</h2><button type="button" class="icon-button" data-close-dialog data-icon="close" aria-label="ปิด"></button></div><label id="documentNameLabel">ชื่อเอกสาร<input id="newName" value="untitled" maxlength="80" required /></label><div class="field-pair"><label>กว้าง (px)<input id="newWidth" type="number" min="1" max="4096" value="1024" required /></label><label>สูง (px)<input id="newHeight" type="number" min="1" max="4096" value="1024" required /></label></div><label id="documentBackgroundLabel">พื้นหลัง<select id="newBackground"><option value="transparent">โปร่งใส</option><option value="white">สีขาว</option><option value="black">สีดำ</option></select></label><label id="resizeRatioLabel" hidden><input type="checkbox" id="resizeRatio" checked /> รักษาสัดส่วนเดิม</label><p class="muted">ขนาดสูงสุด 4096 × 4096 px</p><div class="dialog-actions"><button type="button" data-close-dialog>ยกเลิก</button><button type="submit" class="primary" id="dialogSubmit">สร้างเอกสาร</button></div></form></dialog>
+<dialog id="helpDialog"><div class="dialog-heading"><h2>ใช้งานให้คล่องขึ้น</h2><button class="icon-button" data-close-dialog data-icon="close" aria-label="ปิด"></button></div><p>เปิดรูป → เลือกเครื่องมือ → แก้ไข → ส่งออก</p><div class="shortcut-list"><span>แปรง / ยางลบ</span><kbd>B / E</kbd><span>เลือกพื้นที่ / ตัดรูป</span><kbd>M / C</kbd><span>ย้ายเลเยอร์ / เลื่อนภาพ</span><kbd>V / H</kbd><span>ข้อความ / ดูดสี / เทสี</span><kbd>T / I / G</kbd><span>ย้อนกลับ / ทำซ้ำ</span><kbd>Ctrl Z / Ctrl Shift Z</kbd><span>สำเนาเลเยอร์ / คัดลอกพื้นที่</span><kbd>Ctrl J</kbd><span>ยกเลิกพื้นที่เลือก</span><kbd>Esc / Ctrl D</kbd><span>ลบในพื้นที่เลือก</span><kbd>Delete</kbd><span>ตัดรูปที่เลือก</span><kbd>Enter</kbd><span>เลื่อนภาพ / ซูม</span><kbd>Space / Ctrl Scroll</kbd></div><p class="muted">เลเยอร์ด้านบนทับด้านล่าง กดปุ่มตาเพื่อซ่อน/แสดง และปุ่มล็อกเพื่อป้องกันการแก้ไข<br>การปรับสีใช้กับเลเยอร์ที่เลือก ส่งออกเป็นภาพรวม ไม่ใช่ไฟล์ PSD</p></dialog>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
