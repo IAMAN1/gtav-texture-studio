@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#202329" />
   <title>Texture Studio — Image & GTA Editor</title>
-  <script type="module" crossorigin src="./assets/index-B1m11qQX.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-BSbjU2Mj.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="./assets/index-bdQ30pVI.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-fA5YYNiM.css">
 </head>
 <body>
 <a class="skip-link" href="#workspace">ไปยังพื้นที่แก้ไข</a>
@@ -63,6 +66,15 @@
       <label class="secondary-upload" for="modelInput" data-icon="box">โหลดโมเดล</label>
       <input type="file" id="modelInput" class="sr-only" accept=".ydd,.ydr,.yft,.xml,.glb,.gltf,.obj,.fbx" />
       <p class="muted">GTA / CodeWalker XML / GLB / OBJ / FBX</p>
+      <div class="section-heading"><h3>โมเดลตัวอย่าง</h3></div>
+      <ul id="demoList" class="asset-list"></ul>
+      <p class="muted">สร้างเองในเว็บ ไม่มีปัญหาลิขสิทธิ์ — คลิกแล้วลองแก้ texture ได้เลย</p>
+      <div class="section-heading"><h3>จากโฟลเดอร์ในเครื่อง</h3></div>
+      <label class="secondary-upload" for="folderInput" data-icon="folder">เลือกโฟลเดอร์โมเดล</label>
+      <input type="file" id="folderInput" class="sr-only" webkitdirectory />
+      <p class="muted">แตกไฟล์ .rpf จากเกมด้วย OpenIV / CodeWalker แล้วเลือกโฟลเดอร์ — เว็บอ่านในเครื่องคุณเท่านั้น ไม่ได้แจกไฟล์เกม (ลิขสิทธิ์ Rockstar)</p>
+      <ul id="folderList" class="asset-list"><li class="list-empty">เลือกโฟลเดอร์เพื่อค้นหาโมเดล</li></ul>
+      <div class="section-heading"><h3>โมเดลในฉาก</h3></div>
       <ul id="meshList" class="asset-list"><li class="list-empty">ยังไม่มีโมเดล</li></ul>
       <div class="model-options">
         <label><input type="checkbox" id="flipV" /> กลับ UV แนวตั้ง</label>
@@ -109,7 +121,7 @@
         <div id="selectionActions" class="selection-actions" hidden><span id="selectionSize"></span><button id="cropSelection" class="primary">ตัดรูป</button><button id="copySelection">คัดลอกเป็นเลเยอร์</button><button id="keepSelection">ลบนอกพื้นที่</button><button id="clearSelection" aria-label="ยกเลิกพื้นที่เลือก">ยกเลิก</button></div>
         <div class="canvas-bottom"><span id="documentSize">—</span><div class="zoom-controls"><button id="zoomOut" class="icon-button" data-icon="minus" aria-label="ซูมออก" disabled></button><button id="zoomActual" disabled>100%</button><button id="zoomIn" class="icon-button" data-icon="plus" aria-label="ซูมเข้า" disabled></button><button id="zoomFit" data-icon="fit" disabled>พอดีจอ</button></div></div>
       </section>
-      <section id="viewport" aria-label="ดูโมเดล 3D"><div id="modelEmpty" class="model-empty"><span data-icon="box"></span><h2>ดูงานบนโมเดลจริง</h2><p>โหลดโมเดลจากแผงไฟล์ด้านซ้าย<br>หมุนด้วยเมาส์ · เลื่อนเพื่อซูม</p><button id="openModel" data-icon="folder">โหลดโมเดล 3D</button></div><span class="viewport-label">LIVE 3D PREVIEW</span></section>
+      <section id="viewport" aria-label="ดูโมเดล 3D"><div id="modelEmpty" class="model-empty"><span data-icon="box"></span><h2>ดูงานบนโมเดลจริง</h2><p>โหลดโมเดลจากแผงไฟล์ด้านซ้าย<br>หมุนด้วยเมาส์ · เลื่อนเพื่อซูม</p><button id="openModel" data-icon="folder">โหลดโมเดล 3D</button><span class="empty-demo-label">หรือลองโมเดลตัวอย่าง:</span><ul id="modelEmptyDemos" class="asset-list demo-inline"></ul><button id="openFolderEmpty" class="text-button">เลือกโฟลเดอร์โมเดลจากเครื่อง →</button></div><span class="viewport-label">LIVE 3D PREVIEW</span></section>
     </div>
   </main>
 
@@ -118,7 +130,7 @@
     <div id="textOptions" class="property-section" hidden>
       <h3>ข้อความ</h3><label for="textContent">ข้อความที่ต้องการ</label><textarea id="textContent" rows="2" placeholder="พิมพ์ข้อความ แล้วคลิกบนรูป"></textarea>
       <div class="field-pair"><label>ขนาดตัวอักษร<input type="number" id="fontSize" min="8" max="512" value="48" /></label><label>น้ำหนัก<select id="fontWeight"><option value="400">ปกติ</option><option value="700" selected>ตัวหนา</option></select></label></div>
-      <label>ฟอนต์<select id="fontFamily"><option value="sans-serif">Sans serif / ภาษาไทย</option><option value="serif">Serif</option><option value="monospace">Monospace</option></select></label>
+      <label>ฟอนต์<select id="fontFamily"><option value="Prompt, sans-serif" selected>Prompt · ไทย + อังกฤษ</option><option value="sans-serif">Sans serif</option><option value="serif">Serif</option><option value="monospace">Monospace</option></select></label>
       <p class="muted">ข้อความจะเป็นเลเยอร์ภาพ แก้ขนาดและตำแหน่งได้</p>
     </div>
     <div id="shapeOptions" class="property-section" hidden><h3>รูปทรง</h3><label><input type="checkbox" id="shapeFill" checked /> เติมสีด้านใน</label><p class="muted">ลากบนรูปเพื่อสร้างรูปทรงเป็นเลเยอร์ใหม่</p></div>
@@ -155,6 +167,6 @@
 </div>
 <div id="dropOverlay" hidden><span data-icon="image"></span><h2>วางไฟล์เพื่อเริ่มแก้ไข</h2><p>วางบนรูป = เพิ่มเลเยอร์ · วางที่แผงไฟล์ = เปิดรูปใหม่</p></div>
 <dialog id="documentDialog"><form id="documentForm"><div class="dialog-heading"><h2 id="dialogTitle">สร้างรูปใหม่</h2><button type="button" class="icon-button" data-close-dialog data-icon="close" aria-label="ปิด"></button></div><label id="documentNameLabel">ชื่อเอกสาร<input id="newName" value="untitled" maxlength="80" required /></label><div class="field-pair"><label>กว้าง (px)<input id="newWidth" type="number" min="1" max="4096" value="1024" required /></label><label>สูง (px)<input id="newHeight" type="number" min="1" max="4096" value="1024" required /></label></div><label id="documentBackgroundLabel">พื้นหลัง<select id="newBackground"><option value="transparent">โปร่งใส</option><option value="white">สีขาว</option><option value="black">สีดำ</option></select></label><label id="resizeRatioLabel" hidden><input type="checkbox" id="resizeRatio" checked /> รักษาสัดส่วนเดิม</label><p class="muted">ขนาดสูงสุด 4096 × 4096 px</p><div class="dialog-actions"><button type="button" data-close-dialog>ยกเลิก</button><button type="submit" class="primary" id="dialogSubmit">สร้างเอกสาร</button></div></form></dialog>
-<dialog id="helpDialog"><div class="dialog-heading"><h2>ใช้งานให้คล่องขึ้น</h2><button class="icon-button" data-close-dialog data-icon="close" aria-label="ปิด"></button></div><p>เปิดรูป → เลือกเครื่องมือ → แก้ไข → ส่งออก</p><div class="shortcut-list"><span>แปรง / ยางลบ</span><kbd>B / E</kbd><span>เลือกพื้นที่ / ตัดรูป</span><kbd>M / C</kbd><span>ย้ายเลเยอร์ / เลื่อนภาพ</span><kbd>V / H</kbd><span>ข้อความ / ดูดสี / เทสี</span><kbd>T / I / G</kbd><span>ย้อนกลับ / ทำซ้ำ</span><kbd>Ctrl Z / Ctrl Shift Z</kbd><span>สำเนาเลเยอร์ / คัดลอกพื้นที่</span><kbd>Ctrl J</kbd><span>ยกเลิกพื้นที่เลือก</span><kbd>Esc / Ctrl D</kbd><span>ลบในพื้นที่เลือก</span><kbd>Delete</kbd><span>ตัดรูปที่เลือก</span><kbd>Enter</kbd><span>เลื่อนภาพ / ซูม</span><kbd>Space / Ctrl Scroll</kbd></div><p class="muted">เลเยอร์ด้านบนทับด้านล่าง กดปุ่มตาเพื่อซ่อน/แสดง และปุ่มล็อกเพื่อป้องกันการแก้ไข<br>การปรับสีใช้กับเลเยอร์ที่เลือก ส่งออกเป็นภาพรวม ไม่ใช่ไฟล์ PSD</p></dialog>
+<dialog id="helpDialog"><div class="dialog-heading"><h2>ใช้งานให้คล่องขึ้น</h2><button class="icon-button" data-close-dialog data-icon="close" aria-label="ปิด"></button></div><p>เปิดรูป → เลือกเครื่องมือ → แก้ไข → ส่งออก</p><div class="shortcut-list"><span>แปรง / ยางลบ</span><kbd>B / E</kbd><span>เลือกพื้นที่ / ตัดรูป</span><kbd>M / C</kbd><span>ย้ายเลเยอร์ / เลื่อนภาพ</span><kbd>V / H</kbd><span>ข้อความ / ดูดสี / เทสี</span><kbd>T / I / G</kbd><span>ย้อนกลับ / ทำซ้ำ</span><kbd>Ctrl Z / Ctrl Shift Z</kbd><span>สำเนาเลเยอร์ / คัดลอกพื้นที่</span><kbd>Ctrl J</kbd><span>ยกเลิกพื้นที่เลือก</span><kbd>Esc / Ctrl D</kbd><span>ลบในพื้นที่เลือก</span><kbd>Delete</kbd><span>ตัดรูปที่เลือก</span><kbd>Enter</kbd><span>เลื่อนภาพ / ซูม</span><kbd>Space / Ctrl Scroll</kbd></div><p class="muted">เลเยอร์ด้านบนทับด้านล่าง กดปุ่มตาเพื่อซ่อน/แสดง และปุ่มล็อกเพื่อป้องกันการแก้ไข<br>การปรับสีใช้กับเลเยอร์ที่เลือก ส่งออกเป็นภาพรวม ไม่ใช่ไฟล์ PSD</p></dialog>
 </body>
 </html>
