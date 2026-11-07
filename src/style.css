@@ -162,12 +162,6 @@ kbd { font: 11px "Consolas", monospace; color: var(--muted); padding: 2px 5px; b
 .model-empty > [data-icon] svg { width: 44px; height: 44px; color: var(--muted); margin-bottom: 20px; }
 .model-empty h2 { font-size: 20px; }
 .model-empty p { margin: 12px 0 20px; color: var(--muted); }
-.model-empty .empty-demo-label { margin-top: 16px; color: var(--muted); font-size: 11px; }
-.demo-inline { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0 2px; max-height: none; overflow: visible; }
-.demo-inline li { margin: 0; }
-.demo-inline .asset-button { width: auto; border: 1px solid var(--border); background: var(--surface-raised); padding: 6px 12px; }
-.demo-inline .asset-sub { display: none; }
-#modelEmptyDemos + .text-button { margin-top: 10px; }
 .viewport-label { position: absolute; top: 14px; left: 14px; font-size: 9px; letter-spacing: 1.5px; color: var(--muted); pointer-events: none; }
 #app[data-view=split] .work-surfaces { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); }
 #app[data-view=split] #viewport { display: block; border-left: 1px solid var(--border); }
@@ -219,6 +213,20 @@ dialog::backdrop { background: #080d17b8; }
 .dialog-heading button { border: 0; background: none; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
 .shortcut-list { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; margin: 22px 0; font-size: 12px; }
+.model-picker-dialog { width: min(640px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: hidden; display: flex; flex-direction: column; }
+.model-picker-dialog form { display: flex; flex-direction: column; overflow: hidden; flex: 1; min-height: 0; }
+.picker-body { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.picker-search { padding: 8px 0; }
+.picker-search input { width: 100%; min-height: 34px; padding: 6px 10px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); }
+.picker-main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 20px; overflow: hidden; }
+.picker-list { max-height: 100%; overflow-y: auto; margin: 0; }
+.picker-list .list-empty { padding: 16px 4px; }
+.picker-preview { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; background: var(--bg); border-radius: var(--radius); align-self: start; }
+.picker-preview canvas { width: 200px; height: 200px; object-fit: contain; border-radius: 4px; background: var(--canvas-bg); }
+.picker-preview .asset-name { text-align: center; font-weight: 600; }
+.picker-preview .muted { text-align: center; word-break: break-all; }
+.model-picker-dialog .dialog-actions { margin-top: 12px; flex-wrap: wrap; }
+.model-picker-dialog .dialog-actions .text-button { margin-right: auto; }
 .mobile-only { display: none; }
 ::-webkit-scrollbar { width: 6px; height: 5px; }
 ::-webkit-scrollbar-thumb { background: #49505f; border-radius: 4px; }
@@ -294,6 +302,9 @@ dialog::backdrop { background: #080d17b8; }
   .model-empty h2 { font-size: 16px; }
   .model-empty p { font-size: 11px; margin: 8px 0 12px; }
   .model-empty > [data-icon] svg { width: 28px; height: 28px; margin-bottom: 8px; }
+	  .model-picker-dialog { width: calc(100% - 16px); padding: 16px; }
+	  .picker-main { grid-template-columns: 1fr; gap: 12px; }
+	  .picker-preview { max-width: 200px; align-self: center; }
 }
 @media (max-width: 400px) { .brand { display: none; } .app-header { gap: 4px; } .header-actions { gap: 3px; } .header-end { gap: 3px; } }
 @media (max-height: 650px) { .empty-art { width: 100px; height: 90px; margin-bottom: 16px; } .empty-state p { margin: 8px 0 12px; } .drop-hint { margin-top: 10px; } }

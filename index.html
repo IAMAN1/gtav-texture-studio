@@ -65,14 +65,11 @@
       <label class="secondary-upload" for="modelInput" data-icon="box">โหลดโมเดล</label>
       <input type="file" id="modelInput" class="sr-only" accept=".ydd,.ydr,.yft,.xml,.glb,.gltf,.obj,.fbx" />
       <p class="muted">GTA / CodeWalker XML / GLB / OBJ / FBX</p>
-      <div class="section-heading"><h3>โมเดลตัวอย่าง</h3></div>
-      <ul id="demoList" class="asset-list"></ul>
-      <p class="muted">สร้างเองในเว็บ ไม่มีปัญหาลิขสิทธิ์ — คลิกแล้วลองแก้ texture ได้เลย</p>
-      <div class="section-heading"><h3>จากโฟลเดอร์ในเครื่อง</h3></div>
+      <div class="section-heading"><h3>เลือกโมเดล</h3><span id="folderModelCount"></span></div>
       <label class="secondary-upload" for="folderInput" data-icon="folder">เลือกโฟลเดอร์โมเดล</label>
       <input type="file" id="folderInput" class="sr-only" webkitdirectory />
+      <button id="openModelPicker" class="full-width" data-icon="box" hidden>เปิดรายชื่อโมเดล</button>
       <p class="muted">แตกไฟล์ .rpf จากเกมด้วย OpenIV / CodeWalker แล้วเลือกโฟลเดอร์ — เว็บอ่านในเครื่องคุณเท่านั้น ไม่ได้แจกไฟล์เกม (ลิขสิทธิ์ Rockstar)</p>
-      <ul id="folderList" class="asset-list"><li class="list-empty">เลือกโฟลเดอร์เพื่อค้นหาโมเดล</li></ul>
       <div class="section-heading"><h3>โมเดลในฉาก</h3></div>
       <ul id="meshList" class="asset-list"><li class="list-empty">ยังไม่มีโมเดล</li></ul>
       <div class="model-options">
@@ -120,7 +117,7 @@
         <div id="selectionActions" class="selection-actions" hidden><span id="selectionSize"></span><button id="cropSelection" class="primary">ตัดรูป</button><button id="copySelection">คัดลอกเป็นเลเยอร์</button><button id="keepSelection">ลบนอกพื้นที่</button><button id="clearSelection" aria-label="ยกเลิกพื้นที่เลือก">ยกเลิก</button></div>
         <div class="canvas-bottom"><span id="documentSize">—</span><div class="zoom-controls"><button id="zoomOut" class="icon-button" data-icon="minus" aria-label="ซูมออก" disabled></button><button id="zoomActual" disabled>100%</button><button id="zoomIn" class="icon-button" data-icon="plus" aria-label="ซูมเข้า" disabled></button><button id="zoomFit" data-icon="fit" disabled>พอดีจอ</button></div></div>
       </section>
-      <section id="viewport" aria-label="ดูโมเดล 3D"><div id="modelEmpty" class="model-empty"><span data-icon="box"></span><h2>ดูงานบนโมเดลจริง</h2><p>โหลดโมเดลจากแผงไฟล์ด้านซ้าย<br>หมุนด้วยเมาส์ · เลื่อนเพื่อซูม</p><button id="openModel" data-icon="folder">โหลดโมเดล 3D</button><span class="empty-demo-label">หรือลองโมเดลตัวอย่าง:</span><ul id="modelEmptyDemos" class="asset-list demo-inline"></ul><button id="openFolderEmpty" class="text-button">เลือกโฟลเดอร์โมเดลจากเครื่อง →</button></div><span class="viewport-label">LIVE 3D PREVIEW</span></section>
+      <section id="viewport" aria-label="ดูโมเดล 3D"><div id="modelEmpty" class="model-empty"><span data-icon="box"></span><h2>ดูงานบนโมเดลจริง</h2><p>เลือกโฟลเดอร์โมเดลจากเครื่อง<br>แล้วเลือกรายชื่อเพื่อโหลด</p><button id="openModel" data-icon="folder">โหลดโมเดล 3D</button><button id="openFolderEmpty" class="text-button">เลือกจากโฟลเดอร์ในเครื่อง →</button></div><span class="viewport-label">LIVE 3D PREVIEW</span></section>
     </div>
   </main>
 
