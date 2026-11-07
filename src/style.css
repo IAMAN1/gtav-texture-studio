@@ -16,7 +16,7 @@
   --radius: 6px;
   --checker-light: #c4c7ce;
   --checker-dark: #aeb2bb;
-  font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
+  font-family: "Prompt", "Segoe UI", Tahoma, system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -162,6 +162,12 @@ kbd { font: 11px "Consolas", monospace; color: var(--muted); padding: 2px 5px; b
 .model-empty > [data-icon] svg { width: 44px; height: 44px; color: var(--muted); margin-bottom: 20px; }
 .model-empty h2 { font-size: 20px; }
 .model-empty p { margin: 12px 0 20px; color: var(--muted); }
+.model-empty .empty-demo-label { margin-top: 16px; color: var(--muted); font-size: 11px; }
+.demo-inline { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0 2px; max-height: none; overflow: visible; }
+.demo-inline li { margin: 0; }
+.demo-inline .asset-button { width: auto; border: 1px solid var(--border); background: var(--surface-raised); padding: 6px 12px; }
+.demo-inline .asset-sub { display: none; }
+#modelEmptyDemos + .text-button { margin-top: 10px; }
 .viewport-label { position: absolute; top: 14px; left: 14px; font-size: 9px; letter-spacing: 1.5px; color: var(--muted); pointer-events: none; }
 #app[data-view=split] .work-surfaces { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); }
 #app[data-view=split] #viewport { display: block; border-left: 1px solid var(--border); }

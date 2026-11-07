@@ -7,6 +7,7 @@ import { parseCodeWalkerXml } from './gtaXmlParser.js';
 import { decodeDDS, encodeDDS } from './dds.js';
 import { parseYTD, decodeYTDTexture, buildYTD } from './ytd.js';
 import { parseDrawableFile } from './ydd.js';
+import { demoCatalog } from './demoModels.js';
 import { TextureEditor, createTextureEntry } from './textureEditor.js';
 
 const $ = (id) => document.getElementById(id);
@@ -279,17 +280,7 @@ function flipAllUV() {
     for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i)); uv.needsUpdate = true;
   }
 }
-async function loadModel(file) {
-  if (!renderer) throw new Error('อุปกรณ์นี้ไม่รองรับมุมมอง 3D');
-  const ext = file.name.toLowerCase().split('.').pop(); let object, embedded = [], warnings = [];
-  if (['ydd', 'ydr', 'yft'].includes(ext)) {
-    const parsed = await parseDrawableFile(await file.arrayBuffer(), file.name); object = parsed.object;
-    if (parsed.res.textures.length) { embedded = addResourceTextures(parsed.res, file.name); warnings = parsed.res.decodeFailures; }
-  } else if (ext === 'xml') object = parseCodeWalkerXml(await file.text());
-  else if (['glb', 'gltf'].includes(ext)) object = (await new GLTFLoader().parseAsync(await file.arrayBuffer(), '')).scene;
-  else if (ext === 'obj') object = new OBJLoader().parse(await file.text());
-  else if (ext === 'fbx') object = new FBXLoader().parse(await file.arrayBuffer(), '');
-  else throw new Error(`ไม่รองรับโมเดล .${ext}`);
+function setModel(object, message, firstEntry = null) {
   const meshes = [];
   object.traverse((mesh) => {
     if (!mesh.isMesh) return;
@@ -305,9 +296,74 @@ async function loadModel(file) {
   if ($('flipV').checked) flipAllUV();
   buildMeshList(); buildTexList(); const matched = autoAssignAll();
   $('modelEmpty').hidden = true; $('frameModel').disabled = false;
-  if (embedded.length) setActiveTexture(embedded[0]); setView(editor.entry ? 'split' : '3d');
+  if (firstEntry) setActiveTexture(firstEntry);
+  setView(editor.entry ? 'split' : '3d');
   requestAnimationFrame(() => frameObject(object));
-  setStatus(`โหลด ${file.name} · ${meshes.length} mesh · จับคู่ ${matched} material${warnings.length ? ' · ' + warnings.join(' | ') : ''}`, warnings.length > 0);
+  setStatus(`${message} · ${meshes.length} mesh · จับคู่ ${matched} material`);
+}
+async function loadModel(file) {
+  if (!renderer) throw new Error('อุปกรณ์นี้ไม่รองรับมุมมอง 3D');
+  const ext = file.name.toLowerCase().split('.').pop(); let object, embedded = [], warnings = [];
+  if (['ydd', 'ydr', 'yft'].includes(ext)) {
+    const parsed = await parseDrawableFile(await file.arrayBuffer(), file.name); object = parsed.object;
+    if (parsed.res.textures.length) { embedded = addResourceTextures(parsed.res, file.name); warnings = parsed.res.decodeFailures; }
+  } else if (ext === 'xml') object = parseCodeWalkerXml(await file.text());
+  else if (['glb', 'gltf'].includes(ext)) object = (await new GLTFLoader().parseAsync(await file.arrayBuffer(), '')).scene;
+  else if (ext === 'obj') object = new OBJLoader().parse(await file.text());
+  else if (ext === 'fbx') object = new FBXLoader().parse(await file.arrayBuffer(), '');
+  else throw new Error(`ไม่รองรับโมเดล .${ext}`);
+  setModel(object, `โหลด ${file.name}`, embedded[0] || null);
+  if (warnings.length) setStatus(`โหลด ${file.name} · ${state.meshes.length} mesh · ${warnings.join(' | ')}`, true);
+}
+function buildDemoButtons(container) {
+  container.replaceChildren();
+  for (const demo of demoCatalog) {
+    const row = document.createElement('li'), button = document.createElement('button'); button.className = 'asset-button'; button.disabled = !renderer;
+    const info = document.createElement('span'); info.className = 'asset-text';
+    const name = document.createElement('span'); name.className = 'asset-name'; name.textContent = demo.name;
+    const sub = document.createElement('span'); sub.className = 'asset-sub'; sub.textContent = demo.desc;
+    info.append(name, sub); button.append(info); row.append(button); container.append(row);
+    button.onclick = () => loadDemo(demo.id);
+  }
+}
+function loadDemo(id) {
+  if (!renderer) { setStatus('อุปกรณ์นี้ไม่รองรับมุมมอง 3D', true); return; }
+  const demo = demoCatalog.find((item) => item.id === id); if (!demo) return;
+  end3DPaint();
+  try {
+    const { object, entries } = demo.create();
+    entries.forEach(registerTexture);
+    setModel(object, `โหลดโมเดลตัวอย่าง ${demo.name}`, entries[0]);
+  } catch (error) { setStatus(error.message, true); }
+}
+let folderModels = [], folderTextures = new Map(), folderRoot = '', folderLoaded = new Set();
+function buildFolderList() {
+  const list = $('folderList'); list.replaceChildren();
+  if (!folderModels.length) { list.append(Object.assign(document.createElement('li'), { className: 'list-empty', textContent: 'เลือกโฟลเดอร์เพื่อค้นหาโมเดล' })); return; }
+  const shown = folderModels.slice(0, 400);
+  for (const file of shown) {
+    const row = document.createElement('li'), button = document.createElement('button'); button.className = 'asset-button';
+    const info = document.createElement('span'); info.className = 'asset-text';
+    const name = document.createElement('span'); name.className = 'asset-name'; name.textContent = file.name;
+    const sub = document.createElement('span'); sub.className = 'asset-sub'; sub.textContent = (file.webkitRelativePath || file.name).replace(`${folderRoot}/`, '');
+    info.append(name, sub); button.append(info); row.append(button); list.append(row);
+    button.onclick = () => loadFolderModel(file, button);
+  }
+  if (folderModels.length > shown.length) list.append(Object.assign(document.createElement('li'), { className: 'list-empty', textContent: `แสดง ${shown.length} จาก ${folderModels.length} โมเดล — แตกโฟลเดอร์ย่อยให้เล็กลงเพื่อดูทั้งหมด` }));
+}
+async function loadFolderModel(file, button) {
+  button.disabled = true;
+  try {
+    const base = file.name.replace(/\.[^.]+$/, '').toLowerCase();
+    const texture = folderTextures.get(base);
+    if (texture && !folderLoaded.has(base)) {
+      setStatus(`กำลังโหลด ${texture.name}…`);
+      try { await loadTextureFile(texture); folderLoaded.add(base); } catch { /* texture เสริม โหลดโมเดลต่อได้ */ }
+    }
+    setStatus(`กำลังโหลด ${file.name}…`);
+    await loadModel(file);
+  } catch (error) { setStatus(error.message, true); }
+  finally { button.disabled = false; }
 }
 const raycaster = new THREE.Raycaster(), ndc = new THREE.Vector2(); let paint = null;
 function hitTest(event) {
@@ -398,10 +454,10 @@ $('demoDocument').onclick = () => {
   ctx.strokeStyle = '#d4d5d0'; ctx.lineWidth = 1;
   for (let i = 64; i < 1024; i += 64) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 1024); ctx.moveTo(0, i); ctx.lineTo(1024, i); ctx.stroke(); }
   ctx.fillStyle = '#2c4e91'; ctx.fillRect(80, 80, 864, 48);
-  ctx.fillStyle = '#253e69'; ctx.font = '700 32px sans-serif'; ctx.fillText('TEXTURE STUDIO / 001', 80, 194);
+  ctx.fillStyle = '#253e69'; ctx.font = '700 32px "Prompt", sans-serif'; ctx.fillText('TEXTURE STUDIO / 001', 80, 194);
   ctx.fillStyle = '#7898d0'; ctx.beginPath(); ctx.arc(698, 453, 196, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#dca476'; ctx.fillRect(130, 303, 306, 306); ctx.fillStyle = '#edece6'; ctx.beginPath(); ctx.arc(283, 456, 76, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#253e69'; ctx.font = '700 124px sans-serif'; ctx.fillText('MAKE IT', 80, 788); ctx.fillText('YOUR OWN.', 80, 912);
+  ctx.fillStyle = '#253e69'; ctx.font = '700 124px "Prompt", sans-serif'; ctx.fillText('MAKE IT', 80, 788); ctx.fillText('YOUR OWN.', 80, 912);
   const entry = registerTexture(createTextureEntry('studio-sample', canvas)); buildTexList(); setActiveTexture(entry); setStatus('ภาพตัวอย่างพร้อมแล้ว — ลองเพิ่มเลเยอร์และวาด หรือตัดรูปได้เลย');
 };
 document.querySelectorAll('[data-close-dialog]').forEach((button) => button.onclick = () => button.closest('dialog').close());
@@ -418,6 +474,20 @@ $('modelInput').onchange = async (event) => {
   try { setStatus(`กำลังโหลด ${file.name}…`); await loadModel(file); } catch (error) { setStatus(error.message, true); }
   finally { event.target.disabled = false; event.target.value = ''; }
 };
+$('folderInput').onchange = async (event) => {
+  const files = [...event.target.files]; event.target.value = '';
+  if (!files.length) return;
+  folderRoot = (files[0].webkitRelativePath || files[0].name).split('/')[0];
+  const models = [], textures = new Map();
+  for (const file of files) {
+    const name = file.name.toLowerCase();
+    if (/\.(ydd|ydr|yft|xml|glb|gltf|obj|fbx)$/.test(name)) models.push(file);
+    else if (/\.(ytd|dds|png|jpe?g|webp|bmp)$/.test(name)) textures.set(file.name.replace(/\.[^.]+$/, '').toLowerCase(), file);
+  }
+  folderModels = models; folderTextures = textures; folderLoaded.clear(); buildFolderList();
+  setStatus(models.length ? `พบ ${models.length} โมเดลในโฟลเดอร์ ${folderRoot} — คลิกชื่อเพื่อโหลด (texture ชื่อตรงกันจะโหลดให้เอง)` : `ไม่พบโมเดลที่รองรับในโฟลเดอร์ ${folderRoot}`, !models.length);
+};
+$('openFolderEmpty').onclick = () => $('folderInput').click();
 document.querySelectorAll('[data-tool]').forEach((button) => button.onclick = () => setTool(button.dataset.tool));
 $('tool').onchange = () => setTool($('tool').value);
 document.querySelectorAll('button[data-view]').forEach((button) => button.onclick = () => setView(button.dataset.view));
@@ -500,6 +570,6 @@ window.addEventListener('drop', async (event) => {
   if (event.target.closest('#canvasWrap') && editor.entry && imageFiles.every((file) => /\.(png|jpe?g|webp|bmp)$/i.test(file.name))) await importLayers(imageFiles);
   else await importTextures(imageFiles);
 });
-init3D(); setTool('brush'); updateEditorUI();
+init3D(); setTool('brush'); updateEditorUI(); buildDemoButtons($('demoList')); buildDemoButtons($('modelEmptyDemos'));
 
 export { editor, state };
